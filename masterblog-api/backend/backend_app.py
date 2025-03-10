@@ -106,5 +106,30 @@ def update_post(id):
     return jsonify({"message": "Post updated successfully.", "post": post}), 200
 
 
+@app.route('/api/posts/search')
+def search_post():
+    print("inside search")
+    title = request.args.get('title', '').lower()
+    content = request.args.get('content', '').lower()
+    filtered_post = []
+
+    # Loop through the posts and check if title or content matches
+    for post in POSTS :
+        title_match = (title and title in post['title'].lower())
+        content_match = (content and content in post['content'].lower())
+        if title_match or content_match:
+            filtered_post.append(post)
+
+    # If posts were found, return them
+    if filtered_post:
+        return jsonify(filtered_post)
+    # If no posts match, return a response with a 404 status
+    response = {
+        "message": f"No posts match the search criteria",
+        "post" : filtered_post
+    }
+    return jsonify(response), 404
+
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5002, debug=True)
