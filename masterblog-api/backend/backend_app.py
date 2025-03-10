@@ -82,7 +82,9 @@ def get_posts():
         # Sort the posts based on the given field and direction
         sorted_posts = sorted(POSTS, key=lambda post: post[sort_criteria], reverse=reverse)
 
-    return jsonify(sorted_posts)
+    paginated_posts = implement_pagination(sorted_posts)
+    # Return the sorted or unsorted posts that's paginated
+    return jsonify(paginated_posts)
 
 
 @app.route('/api/posts/<int:id>', methods=['DELETE'])
