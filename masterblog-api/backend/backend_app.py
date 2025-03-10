@@ -41,6 +41,24 @@ def implement_pagination(posts):
 @app.route('/api/posts', methods=['GET', 'POST'])
 @limiter.limit("10/minute") # Limit to 10 requests per minute
 def get_posts():
+    if request.method == 'POST':
+        # Get the new post data from the client
+        new_post = request.get_json()
+        if not validate_post_data(new_post):
+            return jsonify({"error": "Invalid POST data , 'title' and 'content' fields are mandatory"}), 400
+
+        # Generate a new ID for the post
+        new_id = max(post['id'] for post in POSTS) + 1
+        new_post['id'] = new_id
+
+        # Add the new post to our list
+        POSTS.append(new_post)
+        response = {
+            "message": f" New post with id {new_id} has been added successfully.",
+            "posts": new_post
+        }
+        # Return the new post data to the client
+        return jsonify(response), 201
     return jsonify(POSTS)
 
 
