@@ -59,7 +59,30 @@ def get_posts():
         }
         # Return the new post data to the client
         return jsonify(response), 201
-    return jsonify(POSTS)
+
+    # for GET request return the POST data
+    sort_criteria = request.args.get('sort', None)
+    sort_direction = request.args.get('direction', 'asc').lower()
+    # Default to original posts if no sort parameters are given
+    sorted_posts = POSTS
+
+    # If a sort field is provided, proceed to sort
+    if sort_criteria:
+        # Check if the sort field is valid
+        if sort_criteria not in ['title', 'content']:
+            return jsonify({"error": "Invalid sort field. Use 'title' or 'content'."}), 400
+
+        # Check if the sort direction is valid
+        if sort_direction not in ['asc', 'desc']:
+            return jsonify({"error": "Invalid direction. Use 'asc' or 'desc'."}), 400
+
+        # Determine the reverse flag based on the direction
+        reverse = True if sort_direction == 'desc' else False
+
+        # Sort the posts based on the given field and direction
+        sorted_posts = sorted(POSTS, key=lambda post: post[sort_criteria], reverse=reverse)
+
+    return jsonify(sorted_posts)
 
 
 @app.route('/api/posts/<int:id>', methods=['DELETE'])
