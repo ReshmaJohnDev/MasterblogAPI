@@ -4,12 +4,10 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
-
 app = Flask(__name__)
 CORS(app)  # This will enable CORS for all routes
 limiter = Limiter(app=app, key_func=get_remote_address)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-
 
 POSTS = [
     {"id": 1, "title": "First post1", "content": "This is the first post."},
@@ -17,9 +15,13 @@ POSTS = [
 ]
 
 def validate_post_data(data):
-  if "title" not in data or "content" not in data:
-    return False
-  return True
+    """
+    This fn validate the data and returns True ,
+     if the data is valid and False , if not valid.
+    """
+    if "title" not in data or "content" not in data:
+        return False
+    return True
 
 
 def find_post_by_id(post_id):
@@ -31,6 +33,9 @@ def find_post_by_id(post_id):
     return  post
 
 def implement_pagination(posts):
+    """
+    This fn is used to perform data pagination
+    """
     page = int(request.args.get('page', 1))
     limit = int(request.args.get('limit', 10))
     start_index = (page - 1) * limit
@@ -41,6 +46,10 @@ def implement_pagination(posts):
 @app.route('/api/posts', methods=['GET', 'POST'])
 @limiter.limit("10/minute") # Limit to 10 requests per minute
 def get_posts():
+    """
+    This end point performs GET and POST operation on POSTS
+     and also does sorting and pagination.
+    """
     if request.method == 'POST':
         # Get the new post data from the client
         new_post = request.get_json()
@@ -55,14 +64,14 @@ def get_posts():
         POSTS.append(new_post)
         response = {
             "message": f" New post with id {new_id} has been added successfully.",
-            "posts": new_post
+            "posts" : new_post
         }
         # Return the new post data to the client
         return jsonify(response), 201
 
     # for GET request return the POST data
     sort_criteria = request.args.get('sort', None)
-    sort_direction = request.args.get('direction', 'asc').lower()
+    sort_direction = request.args.get('direction','asc').lower()
     # Default to original posts if no sort parameters are given
     sorted_posts = POSTS
 
@@ -80,7 +89,7 @@ def get_posts():
         reverse = True if sort_direction == 'desc' else False
 
         # Sort the posts based on the given field and direction
-        sorted_posts = sorted(POSTS, key=lambda post: post[sort_criteria], reverse=reverse)
+        sorted_posts = sorted(POSTS, key=lambda post: post[sort_criteria], reverse= reverse)
 
     paginated_posts = implement_pagination(sorted_posts)
     # Return the sorted or unsorted posts that's paginated
@@ -89,6 +98,9 @@ def get_posts():
 
 @app.route('/api/posts/<int:id>', methods=['DELETE'])
 def delete_post(id):
+    """
+    This function deletes the post based on the id passed .
+    """
     # Find the post with the given ID
     post = find_post_by_id(id)
 
@@ -112,6 +124,9 @@ def delete_post(id):
 
 @app.route('/api/posts/<int:id>', methods=['PUT'])
 def update_post(id):
+    """
+    This function updates a post based on the id provided in the url.
+    """
     # Find the post with the given ID
     post = find_post_by_id(id)
 
@@ -132,7 +147,11 @@ def update_post(id):
 
 
 @app.route('/api/posts/search')
-def search_post():
+def search_post():#
+    """
+    This fn is used to search the post based on the search
+    criteria(title and or content).
+    """
     print("inside search")
     title = request.args.get('title', '').lower()
     content = request.args.get('content', '').lower()
@@ -158,11 +177,17 @@ def search_post():
 
 @app.errorhandler(404)
 def not_found_error(error):
+    """
+    Custom error handler to handle 404 error
+    """
     return jsonify({"error": "Not Found"}), 404
 
 
 @app.errorhandler(405)
 def method_not_allowed_error(error):
+    """
+    Custom error handler to handle 405 error
+    """
     return jsonify({"error": "Method Not Allowed"}), 405
 
 
