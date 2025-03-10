@@ -131,5 +131,15 @@ def search_post():
     return jsonify(response), 404
 
 
+@app.errorhandler(404)
+def not_found_error(error):
+    return jsonify({"error": "Not Found"}), 404
+
+
+@app.errorhandler(405)
+def method_not_allowed_error(error):
+    return jsonify({"error": "Method Not Allowed"}), 405
+
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5002, debug=True)
